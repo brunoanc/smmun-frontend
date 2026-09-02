@@ -1,0 +1,289 @@
+body:has(form[name="registro-delegaciones"]),
+body:has(form[name="registro-faculty"]) {
+    background:
+        radial-gradient(circle at 0 18%, rgba(103, 227, 255, 0.14), transparent 24rem),
+        radial-gradient(circle at 100% 62%, rgba(255, 87, 182, 0.11), transparent 28rem),
+        #f7f5ff;
+}
+
+form[name="registro-delegaciones"],
+form[name="registro-faculty"] {
+    width: min(100%, 1120px);
+    margin: 0 auto;
+    padding: clamp(3.5rem, 7vw, 7rem) clamp(1rem, 4vw, 3rem) clamp(5rem, 9vw, 9rem);
+    color: var(--ink);
+    font-family: "Raleway", Arial, sans-serif;
+}
+
+form[name="registro-delegaciones"] > div,
+form[name="registro-faculty"] > div {
+    margin-bottom: clamp(2.25rem, 5vw, 4.5rem);
+}
+
+form[name="registro-delegaciones"] .titulo,
+form[name="registro-faculty"] .titulo {
+    position: relative;
+    width: 100%;
+    margin: 0 auto 1.15rem;
+    padding: 0;
+    color: var(--navy);
+    background: transparent;
+}
+
+form[name="registro-delegaciones"] .titulo::before,
+form[name="registro-faculty"] .titulo::before {
+    content: "✦";
+    display: block;
+    margin-bottom: 0.5rem;
+    color: var(--pink);
+    font-size: 1.25rem;
+    line-height: 1;
+}
+
+form[name="registro-delegaciones"] .titulo h2,
+form[name="registro-faculty"] .titulo h2 {
+    margin: 0;
+    padding: 0;
+    color: var(--navy);
+    font-family: "Binate", "Raleway", sans-serif;
+    font-size: clamp(2rem, 4vw, 3.4rem);
+    font-weight: 700;
+    line-height: 1;
+    text-align: left;
+    text-wrap: balance;
+}
+
+form[name="registro-delegaciones"] > .mb-3,
+form[name="registro-faculty"] > .mb-3,
+form[name="registro-faculty"] fieldset > .mb-3 {
+    width: 100%;
+    margin: 0 auto clamp(3rem, 6vw, 5.5rem);
+    padding: clamp(1.4rem, 4vw, 3.25rem);
+    border: 1px solid rgba(25, 15, 91, 0.1);
+    border-radius: clamp(1.25rem, 3vw, 2rem);
+    background: rgba(255, 255, 255, 0.96);
+    box-shadow: 0 1.5rem 4rem rgba(25, 15, 91, 0.08);
+}
+
+form[name="registro-delegaciones"] fieldset,
+form[name="registro-faculty"] fieldset {
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+}
+
+form[name="registro-delegaciones"] label,
+form[name="registro-faculty"] label {
+    margin-bottom: 0.5rem;
+    color: var(--navy);
+    font-size: 0.92rem;
+    font-weight: 750;
+    letter-spacing: 0.01em;
+}
+
+form[name="registro-delegaciones"] p,
+form[name="registro-delegaciones"] li,
+form[name="registro-faculty"] p,
+form[name="registro-faculty"] li {
+    color: #454064;
+    line-height: 1.75;
+}
+
+form[name="registro-delegaciones"] a,
+form[name="registro-faculty"] a {
+    color: var(--blue);
+    font-weight: 650;
+    text-decoration-color: var(--cyan);
+    text-decoration-thickness: 2px;
+    text-underline-offset: 0.2em;
+}
+
+form[name="registro-delegaciones"] .form-control,
+form[name="registro-faculty"] .form-control {
+    min-height: 3.2rem;
+    margin-bottom: 1.15rem;
+    padding: 0.72rem 1rem;
+    border: 1.5px solid #d8d3e9;
+    border-radius: 0.85rem;
+    color: var(--ink);
+    background: #fcfbff;
+    font-family: "Raleway", Arial, sans-serif;
+    font-size: 0.95rem;
+    box-shadow: none;
+    transition: border-color 160ms ease, box-shadow 160ms ease, background 160ms ease;
+}
+
+form[name="registro-delegaciones"] .form-control:focus,
+form[name="registro-faculty"] .form-control:focus {
+    border-color: var(--pink);
+    outline: 0;
+    background: #ffffff;
+    box-shadow: 0 0 0 0.24rem rgba(255, 87, 182, 0.13);
+}
+
+form[name="registro-delegaciones"] input[type="file"],
+form[name="registro-faculty"] input[type="file"] {
+    padding: 0.48rem;
+}
+
+form[name="registro-delegaciones"] input[type="file"]::file-selector-button,
+form[name="registro-faculty"] input[type="file"]::file-selector-button {
+    margin-right: 1rem;
+    padding: 0.65rem 1rem;
+    border: 0;
+    border-radius: 0.65rem;
+    color: #ffffff;
+    background: var(--navy);
+    font-weight: 700;
+}
+
+form[name="registro-delegaciones"] .form-check-input,
+form[name="registro-faculty"] .form-check-input {
+    min-height: auto;
+    border-color: #bcb5d5;
+}
+
+form[name="registro-delegaciones"] .form-check-input:checked,
+form[name="registro-faculty"] .form-check-input:checked {
+    border-color: var(--pink);
+    background-color: var(--pink);
+}
+
+body:has(form[name="registro-delegaciones"]) .dropdown-item.active,
+body:has(form[name="registro-delegaciones"]) .dropdown-item:active,
+body:has(form[name="registro-faculty"]) .dropdown-item.active,
+body:has(form[name="registro-faculty"]) .dropdown-item:active {
+    color: #ffffff;
+    background: var(--navy) !important;
+}
+
+body:has(form[name="registro-delegaciones"]) .iti__dropdown-content,
+body:has(form[name="registro-faculty"]) .iti__dropdown-content {
+    border: 1px solid rgba(25, 15, 91, 0.12);
+    border-radius: 1rem;
+    box-shadow: 0 1rem 2.5rem rgba(25, 15, 91, 0.14);
+}
+
+form[name="registro-delegaciones"] #img-pago,
+form[name="registro-faculty"] #img-pago {
+    width: min(100%, 36rem);
+    margin: 1.25rem auto 2rem;
+    border: 1px solid rgba(25, 15, 91, 0.1);
+    border-radius: 1.4rem;
+    box-shadow: 0 1.25rem 3rem rgba(25, 15, 91, 0.12);
+}
+
+form[name="registro-delegaciones"] > .modality-guide {
+    width: 100%;
+    margin: 0 auto clamp(3rem, 6vw, 5.5rem);
+}
+
+form[name="registro-delegaciones"] #img-modalidad {
+    width: 100%;
+    max-width: none;
+    display: block;
+    margin: 0;
+    border: 1px solid rgba(25, 15, 91, 0.1);
+    border-radius: clamp(1.25rem, 3vw, 2rem);
+    box-shadow: 0 1.5rem 4rem rgba(25, 15, 91, 0.1);
+}
+
+form[name="registro-delegaciones"] .comite-horario {
+    padding: 0.9rem 1rem;
+    border-left: 3px solid var(--cyan);
+    color: var(--navy);
+    background: rgba(103, 227, 255, 0.08);
+}
+
+form[name="registro-faculty"] .accordion {
+    overflow: hidden;
+    border: 1px solid rgba(25, 15, 91, 0.1);
+    border-radius: 1.2rem;
+}
+
+form[name="registro-faculty"] .accordion-item {
+    border: 0;
+    border-bottom: 1px solid rgba(25, 15, 91, 0.09);
+}
+
+form[name="registro-faculty"] .accordion-item:last-child {
+    border-bottom: 0;
+}
+
+form[name="registro-faculty"] .accordion-button {
+    padding: 1.2rem 1.3rem;
+    color: var(--navy);
+    background: #ffffff;
+    font-weight: 800;
+    box-shadow: none;
+}
+
+form[name="registro-faculty"] .accordion-button:not(.collapsed) {
+    color: var(--navy);
+    background: rgba(253, 202, 64, 0.17);
+}
+
+form[name="registro-delegaciones"] button[type="submit"],
+form[name="registro-faculty"] button[type="submit"] {
+    min-height: 3.6rem;
+    border: 0 !important;
+    border-radius: 999px !important;
+    color: #ffffff !important;
+    background: var(--navy) !important;
+    font-size: 0.82rem;
+    font-weight: 850 !important;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    box-shadow: 0 0.9rem 2rem rgba(25, 15, 91, 0.18);
+    transition: transform 160ms ease, background 160ms ease, box-shadow 160ms ease;
+}
+
+form[name="registro-delegaciones"] button[type="submit"]:not(:disabled):hover,
+form[name="registro-faculty"] button[type="submit"]:not(:disabled):hover {
+    background: var(--pink) !important;
+    box-shadow: 0 1rem 2.4rem rgba(255, 87, 182, 0.24);
+    transform: translateY(-2px);
+}
+
+form[name="registro-delegaciones"] button[type="submit"]:disabled,
+form[name="registro-faculty"] button[type="submit"]:disabled {
+    opacity: 0.62;
+}
+
+@media (max-width: 680px) {
+    form[name="registro-delegaciones"],
+    form[name="registro-faculty"] {
+        padding-inline: 0.85rem;
+    }
+
+    form[name="registro-delegaciones"] > .mb-3,
+    form[name="registro-faculty"] > .mb-3,
+    form[name="registro-faculty"] fieldset > .mb-3 {
+        padding: 1.25rem;
+        border-radius: 1.15rem;
+    }
+
+    form[name="registro-delegaciones"] .titulo,
+    form[name="registro-faculty"] .titulo {
+        padding-inline: 0.35rem;
+    }
+
+    form[name="registro-delegaciones"] .row,
+    form[name="registro-faculty"] .row {
+        display: grid;
+        grid-template-columns: 1fr;
+    }
+
+    form[name="registro-delegaciones"] .col,
+    form[name="registro-faculty"] .col {
+        width: 100%;
+    }
+
+    form[name="registro-delegaciones"] p,
+    form[name="registro-delegaciones"] li,
+    form[name="registro-faculty"] p,
+    form[name="registro-faculty"] li {
+        text-align: left !important;
+    }
+}

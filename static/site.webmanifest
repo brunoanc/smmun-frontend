@@ -1,0 +1,21 @@
+{
+  "name": "SMMUN",
+  "short_name": "SMMUN",
+  "icons": [
+    {
+      "src": "/web-app-manifest-192x192.png?v=20260903",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/web-app-manifest-512x512.png?v=20260903",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "theme_color": "#190F5B",
+  "background_color": "#190F5B",
+  "display": "standalone"
+}

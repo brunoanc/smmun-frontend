@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <!-- Verificación para consolas de SEO -->
+    <meta name="google-site-verification" content="1XFsrJ6ht6FZhD4gvkwYzTjFhQSo7ymgGxr0xouNV9s">
+    <meta name="yandex-verification" content="603a40c50ed97d75">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="/favicon-96x96.png?v=20260903" sizes="96x96" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=20260903" />
+    <link rel="shortcut icon" href="/favicon.ico?v=20260903" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=20260903" />
+    <meta name="apple-mobile-web-app-title" content="SMMUN" />
+    <link rel="manifest" href="/site.webmanifest?v=20260903" />
+
+    <!-- Información de la página -->
+    <meta property="og:site_name" content="SMMUN">
+
+    <!-- Fuentes de la identidad visual del SMMUN -->
+    <link rel="preload" href="/assets/fonts/raleway-variable.ttf" as="font" type="font/ttf" crossorigin>
+    <link rel="preload" href="/assets/fonts/binate-regular.woff2" as="font" type="font/woff2" crossorigin>
+
+    <style>
+        @font-face {
+            font-family: "Raleway";
+            src: url("/assets/fonts/raleway-variable.ttf") format("truetype");
+            font-style: normal;
+            font-weight: 100 900;
+            font-display: swap;
+        }
+
+        @font-face {
+            font-family: "Raleway";
+            src: url("/assets/fonts/raleway-italic-variable.ttf") format("truetype");
+            font-style: italic;
+            font-weight: 100 900;
+            font-display: swap;
+        }
+
+        @font-face {
+            font-family: "Caveat";
+            src: url("/assets/fonts/caveat-variable.ttf") format("truetype");
+            font-style: normal;
+            font-weight: 400 700;
+            font-display: swap;
+        }
+
+        @font-face {
+            font-family: "Binate";
+            src: url("/assets/fonts/binate-regular.woff2") format("woff2");
+            font-style: normal;
+            font-weight: 400;
+            font-display: swap;
+        }
+
+        @font-face {
+            font-family: "Binate";
+            src: url("/assets/fonts/binate-bold.woff2") format("woff2");
+            font-style: normal;
+            font-weight: 700;
+            font-display: swap;
+        }
+
+        :root {
+            --navy: #190f5b;
+            --blue: #00608a;
+            --cyan: #67e3ff;
+            --coral: #ff6b6b;
+            --yellow: #fdca40;
+            --pink: #ff57b6;
+            --ink: #17113e;
+            --paper: #fffdf8;
+            --nav-height: 5.4rem;
+            color: var(--ink);
+            font-family: "Raleway", Arial, sans-serif;
+            font-synthesis: none;
+        }
+
+        html {
+            width: 100%;
+            margin: 0;
+            padding: 0;
+            scroll-behavior: smooth;
+            background: var(--paper);
+        }
+
+        body {
+            width: 100%;
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+            background: var(--paper);
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
+
+        body, button, a {
+            font-family: "Raleway", Arial, sans-serif;
+        }
+
+        button, a {
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        a {
+            color: inherit;
+        }
+
+        img {
+            max-width: 100%;
+        }
+
+        figure {
+            margin: 0;
+        }
+
+        ::selection {
+            color: #ffffff;
+            background: var(--pink);
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            html {
+                scroll-behavior: auto;
+            }
+
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+    </style>
+
+    %sveltekit.head%
+</head>
+<body data-sveltekit-preload-data="hover">
+    <div style="display: contents">%sveltekit.body%</div>
+</body>
