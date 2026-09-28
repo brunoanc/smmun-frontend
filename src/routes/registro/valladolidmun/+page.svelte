@@ -4,6 +4,9 @@
     import TituloRegistro from '$lib/components/TituloRegistro.svelte';
     import { connectAppsScript, generateFolio, readReceipt, type Participant, type Preference } from '$lib/registration/apps-script';
 
+    import { validateParticipant, validateReceipt } from '$lib/registration/validation';
+
+    const preferenceLabels = ['Primera opción', 'Segunda opción', 'Tercera opción'];
     const endpoint = import.meta.env.VITE_APPS_SCRIPT_URL || 'https://script.google.com/macros/s/AKfycbxnzkNGBDyS-hUUlaLfsxeRKtsTuA_yrcm3I22UnDrLfeTBjvGg-Wzn3SBI14XLmNnN/exec';
     const steps = ['Tus datos', 'Emergencia', 'Tu delegación', 'Comités', 'Pago'];
     const fields: { key: string; label: string; type?: string; required?: boolean; autocomplete?: HTMLInputAttributes["autocomplete"] }[][] = [
@@ -108,20 +111,28 @@
         if (sending || !form?.reportValidity()) return;
         error = '';
         try {
+            const issue = validateParticipant(participant, step < 3 ? step : step === 4 ? undefined : -1);
+            if (issue) {
+                if (issue.step !== step) await move(issue.step);
+                error = issue.message;
+                await tick();
+                (form?.elements.namedItem(issue.field) as HTMLElement | null)?.focus();
+                return;
+            }
             if (step === 3) validatePreferences();
             if (step < 4) { await move(step + 1); return; }
             validatePreferences();
-            if (!receipt) throw new Error('Adjunta tu comprobante de pago.');
-            if (receipt.size === 0 || receipt.size > 5 * 1024 * 1024) throw new Error('El comprobante debe tener contenido y pesar como máximo 5 MB.');
-            if (!['application/pdf', 'image/jpeg', 'image/png'].includes(receipt.type)) throw new Error('Selecciona un archivo PDF, JPG o PNG.');
+            const receiptError = validateReceipt(receipt);
+            if (receiptError) throw new Error(receiptError);
             if (!bridge || loading || connectionError) throw new Error('Espera a que se conecte el registro antes de enviar.');
             sending = true;
+            const archivoBase64 = await readReceipt(receipt!);
             const result = await bridge.call<{ exito: boolean; folio: string }>('register', {
                 requestId,
                 folio: pendingFolio,
                 participante: Object.fromEntries(Object.entries(participant).map(([key, value]) => [key, String(value).trim()])),
                 preferencias: preferences.map(option => ({ comite: option.comite, paises: isCPI(option.comite) ? [...option.paises.slice(0, 2), 'N/A'] : [...option.paises] })),
-                pago: { archivoBase64: await readReceipt(receipt), mimeType: receipt.type, nombreArchivo: receipt.name, monto: amount }
+                pago: { archivoBase64, mimeType: receipt!.type, nombreArchivo: receipt!.name, monto: amount }
             });
             if (!result.exito || !result.folio) throw new Error('No se recibió un folio de confirmación. Intenta nuevamente.');
             folio = result.folio;
@@ -130,7 +141,9 @@
             heading?.focus();
         } catch (cause) {
             error = cause instanceof Error ? cause.message : 'No se pudo enviar el registro. Intenta nuevamente.';
-        } finally { sending = false; }
+        } finally {
+            sending = false;
+        }
     }
 </script>
 
@@ -162,31 +175,31 @@
                 {#if step < 2}
                     <div class="fields">
                         {#each fields[step] as field}
-                            <div class="field"><label for={field.key}>{field.label}{field.required ? ' *' : ''}</label><input id={field.key} type={field.type || 'text'} bind:value={participant[field.key]} required={field.required} autocomplete={field.autocomplete} min={field.type === 'number' ? 10 : undefined} max={field.type === 'number' ? 100 : undefined} step={field.type === 'number' ? 1 : undefined} /></div>
+                            <div class="field"><label for={field.key}>{field.label}{field.required ? ' *' : ''}</label><input id={field.key} type={field.type || 'text'} bind:value={participant[field.key]} required={field.required} autocomplete={field.autocomplete} maxlength={field.type === 'email' ? 254 : field.type === 'tel' ? 40 : field.type === 'number' ? undefined : 200} min={field.type === 'number' ? 10 : undefined} max={field.type === 'number' ? 100 : undefined} step={field.type === 'number' ? 1 : undefined} /></div>
                         {/each}
                         {#if step === 0}
                             <div class="field"><label for="pronombres">Pronombres *</label><select id="pronombres" bind:value={participant.pronombres} required><option value="">Selecciona una opción</option>{#each ['Él', 'Ella', 'Elle', 'Prefiero no decirlo'] as value}<option>{value}</option>{/each}</select></div>
                         {:else}
-                            <div class="field full"><label for="alergias">Alergias o condiciones médicas</label><textarea id="alergias" bind:value={participant.alergias} placeholder="Si no tienes, escribe Ninguna." rows="3"></textarea></div>
+                            <div class="field full"><label for="alergias">Alergias o condiciones médicas</label><textarea id="alergias" bind:value={participant.alergias} placeholder="Si no tienes, escribe Ninguna." rows="3" maxlength="2000"></textarea></div>
                         {/if}
                     </div>
                 {:else if step === 2}
                     <p>Una delegación oficial representa a una institución y cuenta con una persona Faculty o asesora.</p>
                     <div class="field"><label for="delegacionOficial">¿Formas parte de una delegación oficial? *</label><select id="delegacionOficial" bind:value={participant.delegacionOficial} required onchange={() => { participant.faculty = ''; participant.correoFaculty = ''; }}><option value="">Selecciona una opción</option><option>Sí</option><option>No</option></select></div>
                     {#if participant.delegacionOficial === 'Sí'}
-                        <div class="fields faculty"><div class="field"><label for="faculty">Nombre del Faculty o asesor *</label><input id="faculty" bind:value={participant.faculty} required /></div><div class="field"><label for="correoFaculty">Correo del Faculty *</label><input id="correoFaculty" type="email" bind:value={participant.correoFaculty} required /></div></div>
+                        <div class="fields faculty"><div class="field"><label for="faculty">Nombre del Faculty o asesor *</label><input id="faculty" maxlength="200" bind:value={participant.faculty} required /></div><div class="field"><label for="correoFaculty">Correo del Faculty *</label><input id="correoFaculty" type="email" maxlength="254" bind:value={participant.correoFaculty} required /></div></div>
                     {/if}
                 {:else if step === 3}
                     <p>Elige tres comités distintos en orden de preferencia y sus posibles delegaciones. Para CPI, ordena las dos posturas.</p>
                     {#each preferences as option, index}
                         <section class="preference"><h3>0{index + 1} <span>Opción de comité</span></h3><div class="field"><label for={`comite-${index}`}>Comité *</label><select id={`comite-${index}`} bind:value={option.comite} required onchange={() => { option.paises = ['', '', '']; }}><option value="">Selecciona un comité</option>{#each Object.keys(countries) as committee}<option value={committee} disabled={preferences.some((other, otherIndex) => otherIndex !== index && other.comite === committee)}>{committee}</option>{/each}</select></div>
-                        <div class="fields countries">{#each Array.from({ length: isCPI(option.comite) ? 2 : 3 }) as _, position}<div class="field"><label for={`pais-${index}-${position}`}>{isCPI(option.comite) ? 'Postura' : 'Delegación'} {position + 1} *</label><select id={`pais-${index}-${position}`} bind:value={option.paises[position]} required disabled={!option.comite}><option value="">Selecciona una opción</option>{#each countries[option.comite] || [] as country}<option disabled={option.paises.some((other, otherPosition) => otherPosition !== position && other === country)}>{country}</option>{/each}</select></div>{/each}</div></section>
+                        <div class="fields countries">{#each Array.from({ length: isCPI(option.comite) ? 2 : 3 }) as _, position}<div class="field"><label for={`pais-${index}-${position}`}>{preferenceLabels[position]} *</label><select id={`pais-${index}-${position}`} bind:value={option.paises[position]} required disabled={!option.comite}><option value="">Selecciona una opción</option>{#each countries[option.comite] || [] as country}<option disabled={option.paises.some((other, otherPosition) => otherPosition !== position && other === country)}>{country}</option>{/each}</select></div>{/each}</div></section>
                     {/each}
                 {:else}
                     <p>Revisa tu registro y adjunta tu comprobante para finalizar.</p>
                     <div class="review"><strong>{participant.nombres} {participant.primerApellido} {participant.segundoApellido}</strong><p>{participant.correo} · {participant.escuela}</p><ol>{#each preferences as option}<li>{option.comite}: {option.paises.filter(Boolean).join(', ')}</li>{/each}</ol></div>
                     <div class="payment"><span>Cuota de recuperación</span><strong>{amount}</strong><dl><dt>Banco</dt><dd>BBVA</dd><dt>Titular</dt><dd>Ariel Damian Puerto Puerto</dd><dt>CLABE interbancaria</dt><dd class="clabe">012 180 01575060013 2</dd><dt>Concepto / referencia</dt><dd>Tu nombre completo</dd></dl></div>
-                    <div class="upload"><label for="comprobante">Comprobante de pago *</label><p>PDF, JPG o PNG · Máximo 5 MB</p><input id="comprobante" type="file" accept=".pdf,.jpg,.jpeg,.png" required onchange={(event) => { receipt = event.currentTarget.files?.[0] || null; }} /></div>
+                    <div class="upload"><label for="comprobante">Comprobante de pago *</label><p>PDF, JPG o PNG · Máximo 5 MB</p><input id="comprobante" type="file" accept=".pdf,.jpg,.jpeg,.png" required onchange={(event) => { receipt = event.currentTarget.files?.[0] || null; error = validateReceipt(receipt); }} /></div>
                 {/if}
             </fieldset>
             {#if error}<p class="error" role="alert">{error}</p>{/if}
