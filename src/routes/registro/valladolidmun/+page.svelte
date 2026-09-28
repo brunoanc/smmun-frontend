@@ -27,7 +27,7 @@
         ]
     ];
     let participant = $state<Participant>(Object.fromEntries([
-        'nombres', 'primerApellido', 'segundoApellido', 'pronombres', 'correo', 'edad', 'telefono', 'escuela', 'matricula',
+        'nombres', 'primerApellido', 'segundoApellido', 'pronombres', 'correo', 'edad', 'telefono', 'escuela',
         'contactoEmergencia', 'parentesco', 'telefonoEmergencia', 'alergias', 'delegacionOficial', 'faculty', 'correoFaculty'
     ].map(key => [key, ''])));
     let preferences = $state<Preference[]>(Array.from({ length: 3 }, () => ({ comite: '', paises: ['', '', ''] })));
@@ -49,7 +49,7 @@
     let schoolChoice = $state('');
     const isModelo = $derived(participant.escuela === MODELO_SCHOOL);
     const visibleSteps = $derived(steps.map((label, index) => ({ label, index })).filter(item => !isModelo || item.index !== 2));
-    const amount = $derived(isModelo ? 'Por confirmar' : participant.delegacionOficial === 'Sí' ? '$90 MXN' : '$110 MXN');
+    const amount = $derived(isModelo || participant.delegacionOficial === 'Sí' ? '$90 MXN' : '$110 MXN');
     const isCPI = (committee: string) => committee.trim().toUpperCase() === 'CPI';
 
     onMount(() => {
@@ -132,7 +132,7 @@
             if (step === 3) validatePreferences();
             if (step < 4) { await move(isModelo && step === 1 ? 3 : step + 1); return; }
             validatePreferences();
-            const receiptError = isModelo ? '' : validateReceipt(receipt);
+            const receiptError = validateReceipt(receipt);
             if (receiptError) throw new Error(receiptError);
             if (!bridge || loading || connectionError) throw new Error('Espera a que se conecte el registro antes de enviar.');
             sending = true;
@@ -142,7 +142,7 @@
                 participante: Object.fromEntries(Object.entries(participant).map(([key, value]) => [key, String(value).trim()])),
                 preferencias: preferences.map(option => ({ comite: option.comite, paises: isCPI(option.comite) ? [...option.paises.slice(0, 2), 'N/A'] : [...option.paises] })),
                 pago: { monto: amount }
-            }, isModelo ? undefined : receipt!);
+            }, receipt!);
             if (!result.exito || !result.folio) throw new Error('No se recibió un folio de confirmación. Intenta nuevamente.');
             folio = result.folio;
             try { sessionStorage.removeItem(draftKey); } catch { /* Optional draft storage. */ }
@@ -164,7 +164,7 @@
         <section class="success" aria-live="polite">
             <span class="spark" aria-hidden="true">✦</span>
             <h2 bind:this={heading} tabindex="-1">¡Muchas gracias!</h2>
-            <p>Tu registro se guardó correctamente. {isModelo ? 'El monto de inscripción está por confirmar. Se validará tu pertenencia a la Universidad Modelo Valladolid con tu matrícula.' : 'Tu pago está pendiente de verificación.'}</p>
+            <p>Tu registro se guardó correctamente. Tu pago está pendiente de verificación.</p>
             <span>Tu folio de registro</span>
             <strong class="folio">{folio}</strong>
             <p>Guarda este folio para futuras comunicaciones relacionadas con tu registro.</p>
@@ -190,7 +190,6 @@
                             <div class="field full"><label for="escuela">Escuela o institución *</label><select id="escuela" value={schoolChoice} required onchange={(event) => {
                                 schoolChoice = event.currentTarget.value;
                                 participant.escuela = schoolChoice === MODELO_SCHOOL ? MODELO_SCHOOL : '';
-                                participant.matricula = '';
                                 participant.delegacionOficial = schoolChoice === MODELO_SCHOOL ? 'No' : '';
                                 participant.faculty = '';
                                 participant.correoFaculty = '';
@@ -198,8 +197,6 @@
                             }}><option value="">Selecciona una opción</option><option value={MODELO_SCHOOL}>{MODELO_SCHOOL}</option><option value="Otra">Otra</option></select></div>
                             {#if schoolChoice === 'Otra'}
                                 <div class="field full"><label for="otraEscuela">Nombre de tu escuela o institución *</label><input id="otraEscuela" bind:value={participant.escuela} required maxlength="200" /></div>
-                            {:else if isModelo}
-                                <div class="field"><label for="matricula">Matrícula *</label><input id="matricula" bind:value={participant.matricula} required maxlength="50" pattern="[A-Za-z0-9-]+" /></div>
                             {/if}
                             <div class="field"><label for="pronombres">Pronombres *</label><select id="pronombres" bind:value={participant.pronombres} required><option value="">Selecciona una opción</option>{#each ['Él', 'Ella', 'Elle', 'Prefiero no decirlo'] as value}<option>{value}</option>{/each}</select></div>
                         {:else}
@@ -219,10 +216,10 @@
                         <div class="fields countries">{#each Array.from({ length: isCPI(option.comite) ? 2 : 3 }) as _, position}<div class="field"><label for={`pais-${index}-${position}`}>{preferenceLabels[position]} *</label><select id={`pais-${index}-${position}`} bind:value={option.paises[position]} required disabled={!option.comite}><option value="">Selecciona una opción</option>{#each countries[option.comite] || [] as country}<option disabled={option.paises.some((other, otherPosition) => otherPosition !== position && other === country)}>{country}</option>{/each}</select></div>{/each}</div></section>
                     {/each}
                 {:else}
-                    <p>{isModelo ? 'Revisa tu registro para finalizar.' : 'Revisa tu registro y adjunta tu comprobante para finalizar.'}</p>
+                    <p>Revisa tu registro y adjunta tu comprobante para finalizar.</p>
                     <div class="review"><strong>{participant.nombres} {participant.primerApellido} {participant.segundoApellido}</strong><p>{participant.correo} · {participant.escuela}</p><ol>{#each preferences as option}<li>{option.comite}: {option.paises.filter(Boolean).join(', ')}</li>{/each}</ol></div>
-                    <div class="payment"><span>Cuota de recuperación</span><strong>{amount}</strong>{#if isModelo}<p>El monto de inscripción para estudiantes de la Universidad Modelo Valladolid está por confirmar. Se validará tu pertenencia a la Universidad con tu matrícula. No necesitas realizar un pago ni adjuntar un comprobante para enviar este registro mientras se confirma el monto.</p><p>Matrícula: {participant.matricula}</p>{/if}<dl><dt>Banco</dt><dd>BBVA</dd><dt>Titular</dt><dd>Ariel Damian Puerto Puerto</dd><dt>CLABE interbancaria</dt><dd class="clabe">012 180 01575060013 2</dd><dt>Concepto / referencia</dt><dd>Tu nombre completo</dd></dl></div>
-                    {#if !isModelo}<div class="upload"><label for="comprobante">Comprobante de pago *</label><p>PDF, JPG o PNG · Máximo 5 MB</p><input id="comprobante" type="file" accept=".pdf,.jpg,.jpeg,.png" required onchange={(event) => { receipt = event.currentTarget.files?.[0] || null; error = validateReceipt(receipt); }} /></div>{/if}
+                    <div class="payment"><span>Cuota de recuperación</span><strong>{amount}</strong><dl><dt>Banco</dt><dd>BBVA</dd><dt>Titular</dt><dd>Ariel Damian Puerto Puerto</dd><dt>CLABE interbancaria</dt><dd class="clabe">012 180 01575060013 2</dd><dt>Concepto / referencia</dt><dd>Tu nombre completo</dd></dl></div>
+                    <div class="upload"><label for="comprobante">Comprobante de pago *</label><p>PDF, JPG o PNG · Máximo 5 MB</p><input id="comprobante" type="file" accept=".pdf,.jpg,.jpeg,.png" required onchange={(event) => { receipt = event.currentTarget.files?.[0] || null; error = validateReceipt(receipt); }} /></div>
                 {/if}
             </fieldset>
             {#if error}<p class="error" role="alert">{error}</p>{/if}
@@ -231,7 +228,7 @@
         </form>
         <details class="privacy-summary">
             <summary>Aviso de privacidad simplificado</summary>
-            <p>{privacidad.responsable} es responsable del tratamiento de los datos de este registro. Recogemos datos de identificación, contacto, escuela, matrícula cuando corresponde, contacto de emergencia, delegación y preferencias para gestionar tu inscripción, asignar comités, verificar el pago o tu pertenencia a Universidad Modelo Valladolid y atender emergencias. Cuando corresponde, el comprobante incluye datos financieros.</p>
+            <p>{privacidad.responsable} es responsable del tratamiento de los datos de este registro. Recogemos datos de identificación, contacto, escuela, contacto de emergencia, delegación y preferencias para gestionar tu inscripción, asignar comités, verificar el pago y atender emergencias. Cuando corresponde, el comprobante incluye datos financieros.</p>
             <p>La información de salud que decidas proporcionar es sensible y opcional; se utiliza para prever necesidades de atención y actuar ante emergencias. Puedes dejar ese campo vacío.</p>
             <p>Para ejercer tus derechos de acceso, rectificación, cancelación u oposición, revocar tu consentimiento o limitar el uso o divulgación de tus datos, escribe a <a href={`mailto:${privacidad.correo}`}>{privacidad.correo}</a>. Consulta los detalles en el <a href="/privacidad/" target="_blank" rel="nofollow noopener noreferrer" data-sveltekit-preload-data="off" data-sveltekit-preload-code="off">aviso de privacidad integral</a> antes de completar el formulario.</p>
         </details>

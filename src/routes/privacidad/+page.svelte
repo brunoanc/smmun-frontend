@@ -28,7 +28,7 @@
             <h2>Qué datos recoge el registro</h2>
             <ul>
                 <li>Nombre, apellidos, pronombres, correo electrónico, edad, teléfono y escuela o institución.</li>
-                <li>Matrícula, cuando seleccionas Universidad Modelo Valladolid, para validar tu pertenencia a la Universidad.</li>
+                <li>Los registros realizados con versiones anteriores del formulario pueden incluir una matrícula. El formulario actual ya no solicita ese dato.</li>
                 <li>Nombre, parentesco y teléfono de tu contacto de emergencia.</li>
                 <li>Modalidad de delegación y, cuando corresponde, nombre y correo de la persona Faculty o asesora.</li>
                 <li>Preferencias de comités y delegaciones, folio y datos necesarios para identificar tu solicitud.</li>
@@ -39,14 +39,14 @@
         </section>
         <section>
             <h2>Para qué se utilizan</h2>
-            <p>Para tramitar y confirmar tu inscripción, asignar comités y delegaciones, comunicar información del evento, verificar pagos o confirmar la cuota correspondiente a estudiantes Modelo, y contactar a la persona indicada ante una emergencia.</p>
+            <p>Para tramitar y confirmar tu inscripción, asignar comités y delegaciones, comunicar información del evento, verificar pagos, y contactar a la persona indicada ante una emergencia.</p>
             <p>La información de salud es voluntaria: puedes dejar el campo vacío y completar el registro. El registro no incluye una suscripción a publicidad ni autoriza publicar tus datos personales.</p>
         </section>
         <section>
             <h2>Dónde se guardan y quién puede acceder</h2>
             <p>El registro utiliza Google Apps Script y Google Sheets para procesar y guardar los datos, y Google Drive para almacenar los comprobantes. Estos servicios son prestados por Google y pueden procesar información fuera de México. Puedes consultar la <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer">política de privacidad de Google</a>.</p>
             <p>El acceso debe limitarse a las personas de la organización que necesiten gestionar inscripciones, pagos, validación universitaria o atención de emergencias. Los comprobantes no se publican mediante enlaces de acceso abierto.</p>
-            <p>La validación de la matrícula requiere comprobar la pertenencia a Universidad Modelo Valladolid. Si para ello se necesita comunicar datos a un tercero distinto de quienes gestionan el registro, se deberá informar y obtener el consentimiento que corresponda antes de esa comunicación.</p>
+
         </section>
         <section>
             <h2>Conservación</h2>

@@ -63,12 +63,10 @@ export function connectAppsScript(url: string) {
             await ready;
             if (action === 'register') {
                 if (!payload) throw new Error('Registro incompleto.');
-                if (payload.participante.escuela !== MODELO_SCHOOL) {
-                    if (!receipt) throw new Error('Adjunta tu comprobante de pago.');
-                    payload = { ...payload, pago: { ...payload.pago,
-                        archivoBase64: await readReceipt(receipt), nombreArchivo: receipt.name, mimeType: receipt.type
-                    } };
-                }
+                if (!receipt) throw new Error('Adjunta tu comprobante de pago.');
+                payload = { ...payload, pago: { ...payload.pago,
+                    archivoBase64: await readReceipt(receipt), nombreArchivo: receipt.name, mimeType: receipt.type
+                } };
             }
             const id = crypto.randomUUID();
             return new Promise<T>((resolve, reject) => {
