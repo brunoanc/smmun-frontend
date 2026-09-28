@@ -2,10 +2,17 @@ export type Participant = Record<string, string>;
 export type Preference = { comite: string; paises: string[] };
 export type Registration = {
     requestId: string;
+    folio: string;
     participante: Participant;
     preferencias: Preference[];
     pago: { archivoBase64: string; mimeType: string; nombreArchivo: string; monto: string };
 };
+
+export function generateFolio(): string {
+    const bytes = crypto.getRandomValues(new Uint8Array(8));
+    const alphabet = '0123456789ABCDEFGHJKMNPQRSTVWXYZ';
+    return 'V26-' + Array.from(bytes, byte => alphabet[byte & 31]).join('');
+}
 
 // HtmlService runs inside a Google sandbox. The bridge announces its actual
 // window, so requests target that window instead of the outer Google iframe.

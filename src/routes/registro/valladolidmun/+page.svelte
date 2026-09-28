@@ -2,7 +2,7 @@
     import { onMount, tick } from 'svelte';
     import type { HTMLInputAttributes } from 'svelte/elements';
     import TituloRegistro from '$lib/components/TituloRegistro.svelte';
-    import { connectAppsScript, readReceipt, type Participant, type Preference } from '$lib/registration/apps-script';
+    import { connectAppsScript, generateFolio, readReceipt, type Participant, type Preference } from '$lib/registration/apps-script';
 
     const endpoint = import.meta.env.VITE_APPS_SCRIPT_URL || 'https://script.google.com/macros/s/AKfycbxnzkNGBDyS-hUUlaLfsxeRKtsTuA_yrcm3I22UnDrLfeTBjvGg-Wzn3SBI14XLmNnN/exec';
     const steps = ['Tus datos', 'Emergencia', 'Tu delegación', 'Comités', 'Pago'];
@@ -38,6 +38,7 @@
     let sending = $state(false);
     let folio = $state('');
     let requestId = '';
+    let pendingFolio = '';
     const draftKey = 'valladolidmun-2026-draft';
     let initialized = $state(false);
     let bridge: ReturnType<typeof connectAppsScript> | undefined;
@@ -46,6 +47,7 @@
 
     onMount(() => {
         requestId = crypto.randomUUID();
+        pendingFolio = generateFolio();
         try {
             const stored = JSON.parse(sessionStorage.getItem(draftKey) || 'null');
             if (stored) {
@@ -54,6 +56,7 @@
                 }
                 if (Array.isArray(stored.preferences) && stored.preferences.length === 3 && stored.preferences.every((option: Preference) => typeof option.comite === 'string' && Array.isArray(option.paises) && option.paises.length === 3 && option.paises.every(value => typeof value === 'string'))) preferences = stored.preferences;
                 if (typeof stored.requestId === 'string' && /^[a-zA-Z0-9-]{36}$/.test(stored.requestId)) requestId = stored.requestId;
+                if (typeof stored.pendingFolio === 'string' && /^V26-(?:[0-9A-HJKMNP-TV-Z]{8}|[A-F0-9]{16})$/.test(stored.pendingFolio)) pendingFolio = stored.pendingFolio;
             }
         } catch { /* Storage can be unavailable; the form still works. */ }
         initialized = true;
@@ -63,7 +66,7 @@
 
     $effect(() => {
         if (!initialized || folio) return;
-        const draft = JSON.stringify({ participant: Object.fromEntries(Object.entries(participant).map(([key, value]) => [key, String(value)])), preferences, requestId });
+        const draft = JSON.stringify({ participant: Object.fromEntries(Object.entries(participant).map(([key, value]) => [key, String(value)])), preferences, requestId, pendingFolio });
         try { sessionStorage.setItem(draftKey, draft); } catch { /* Optional draft storage. */ }
     });
 
@@ -115,6 +118,7 @@
             sending = true;
             const result = await bridge.call<{ exito: boolean; folio: string }>('register', {
                 requestId,
+                folio: pendingFolio,
                 participante: Object.fromEntries(Object.entries(participant).map(([key, value]) => [key, String(value).trim()])),
                 preferencias: preferences.map(option => ({ comite: option.comite, paises: isCPI(option.comite) ? [...option.paises.slice(0, 2), 'N/A'] : [...option.paises] })),
                 pago: { archivoBase64: await readReceipt(receipt), mimeType: receipt.type, nombreArchivo: receipt.name, monto: amount }
@@ -213,6 +217,6 @@
     .notice, .error { padding: 1rem 1.2rem; border-radius: 1rem; background: #fff5d7; margin: 1rem 0; }.error { background: #fff0f4; color: #9a1648; }.notice button { margin-left: .5rem; }
     .review { background: #f7f5ff; padding: 1.25rem; border-radius: 1rem; overflow-wrap: anywhere; }.review p { margin: .5rem 0; }.review ol { padding-left: 1.5rem; margin-bottom: 0; }
     .payment { border: 1px solid #d7d2e8; border-radius: 1.2rem; padding: 1.5rem; margin: 1.5rem 0; background: linear-gradient(130deg, #fff9df, #fff); }.payment > strong { display: block; font-size: 2rem; margin: .5rem 0; }dl { display: grid; grid-template-columns: 1fr 2fr; gap: .7rem; margin: 1.5rem 0 0; }dt { font-size: .8rem; }dd { margin: 0; font-weight: 750; overflow-wrap: anywhere; }.clabe { font-variant-numeric: tabular-nums; }
-    .upload { border: 2px dashed #d7d2e8; padding: 1.5rem; border-radius: 1rem; }.upload p { margin: .5rem 0 1rem; font-size: .85rem; }.success { margin-top: 2rem; text-align: center; }.spark { font-size: 3rem; color: #a82b76; }.folio { display: block; margin: 1rem; font-size: 2.5rem; }.success .primary { display: inline-block; margin: 1rem 0; }
+    .upload { border: 2px dashed #d7d2e8; padding: 1.5rem; border-radius: 1rem; }.upload p { margin: .5rem 0 1rem; font-size: .85rem; }.success { margin-top: 2rem; text-align: center; }.spark { font-size: 3rem; color: #a82b76; }.folio { display: block; margin: 1rem; font-size: clamp(1rem, 4vw, 2.5rem); overflow-wrap: anywhere; }.success .primary { display: inline-block; margin: 1rem 0; }
     @media(max-width: 680px) { .fields, .countries { grid-template-columns: 1fr; }.steps { gap: .2rem; }.steps li { flex-direction: column; padding: .5rem .15rem; font-size: .65rem; text-align: center; }dl { grid-template-columns: 1fr; gap: .3rem; }dd { margin-bottom: .7rem; }.actions button { flex: 1; }form { border-radius: 1.2rem; } }
 </style>

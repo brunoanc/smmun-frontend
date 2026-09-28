@@ -44,9 +44,9 @@
     }
 
     .registration-title__inner {
-        width: min(88vw, 1040px);
+        width: min(100%, 1040px);
         display: grid;
-        grid-template-columns: auto 1fr;
+        grid-template-columns: auto minmax(0, 1fr);
         align-items: center;
         gap: clamp(1.5rem, 4vw, 4rem);
     }
@@ -55,6 +55,12 @@
         width: clamp(7rem, 14vw, 11rem);
         height: auto;
         filter: drop-shadow(0 1.2rem 2rem rgba(5, 3, 28, 0.3));
+    }
+
+    .registration-title__copy {
+        min-width: 0;
+        width: 100%;
+        container-type: inline-size;
     }
 
     .registration-title__copy span {
@@ -69,10 +75,11 @@
         max-width: 16ch;
         margin: 0.55rem 0 0;
         font-family: "Binate", "Raleway", sans-serif;
-        font-size: clamp(2.8rem, 7vw, 6.7rem);
+        font-size: clamp(1.6rem, 9cqw, 6.7rem);
         font-weight: 700;
         line-height: 0.9;
         text-wrap: balance;
+        overflow-wrap: anywhere;
     }
 
     .registration-title p {
@@ -116,8 +123,8 @@
         }
 
         .registration-title h1 {
-            max-width: 11ch;
-            font-size: clamp(2.7rem, 13vw, 4rem);
+            max-width: 100%;
+            font-size: clamp(1.6rem, 9cqw, 4rem);
         }
 
         .registration-title p {
