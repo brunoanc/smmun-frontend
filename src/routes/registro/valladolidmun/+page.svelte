@@ -178,12 +178,6 @@
         </ol>
         {#if loading}<p role="status" class="notice">Conectando con el registro…</p>{/if}
         {#if connectionError}<div class="notice" role="alert">{connectionError}{#if endpoint}<button type="button" onclick={loadCountries}>Volver a conectar</button>{/if}</div>{/if}
-        <aside class="privacy-summary" aria-labelledby="privacy-heading">
-            <h2 id="privacy-heading">Aviso de privacidad simplificado</h2>
-            <p>{privacidad.responsable} es responsable del tratamiento de los datos de este registro. Recogemos datos de identificación, contacto, escuela, matrícula cuando corresponde, contacto de emergencia, delegación y preferencias para gestionar tu inscripción, asignar comités, verificar el pago o tu pertenencia a Universidad Modelo Valladolid y atender emergencias. Cuando corresponde, el comprobante incluye datos financieros.</p>
-            <p>La información de salud que decidas proporcionar es sensible y opcional; se utiliza para prever necesidades de atención y actuar ante emergencias. Puedes dejar ese campo vacío.</p>
-            <p>Para ejercer tus derechos de acceso, rectificación, cancelación u oposición, revocar tu consentimiento o limitar el uso o divulgación de tus datos, escribe a <a href={`mailto:${privacidad.correo}`}>{privacidad.correo}</a>. Consulta los detalles en el <a href="/privacidad/" target="_blank" rel="nofollow noopener noreferrer" data-sveltekit-preload-data="off" data-sveltekit-preload-code="off">aviso de privacidad integral</a> antes de completar el formulario.</p>
-        </aside>
         <form bind:this={form} onsubmit={advance}>
             <fieldset disabled={sending}>
                 <header><span class="eyebrow">Paso {visibleSteps.findIndex(item => item.index === step) + 1} de {visibleSteps.length}</span><h2 bind:this={heading} tabindex="-1">{steps[step]}</h2></header>
@@ -235,6 +229,12 @@
             <div class="actions">{#if step > 0}<button class="secondary" type="button" disabled={sending} onclick={() => move(isModelo && step === 3 ? 1 : step - 1)}>← Atrás</button>{/if}<button class="primary" type="submit" disabled={sending || (step >= 3 && (loading || !!connectionError))}>{sending ? 'Guardando tu registro…' : step === 4 ? 'Finalizar registro →' : 'Continuar →'}</button></div>
             {#if sending}<p role="status">Estamos guardando tu registro. Mantén esta página abierta.</p>{/if}
         </form>
+        <details class="privacy-summary">
+            <summary>Aviso de privacidad simplificado</summary>
+            <p>{privacidad.responsable} es responsable del tratamiento de los datos de este registro. Recogemos datos de identificación, contacto, escuela, matrícula cuando corresponde, contacto de emergencia, delegación y preferencias para gestionar tu inscripción, asignar comités, verificar el pago o tu pertenencia a Universidad Modelo Valladolid y atender emergencias. Cuando corresponde, el comprobante incluye datos financieros.</p>
+            <p>La información de salud que decidas proporcionar es sensible y opcional; se utiliza para prever necesidades de atención y actuar ante emergencias. Puedes dejar ese campo vacío.</p>
+            <p>Para ejercer tus derechos de acceso, rectificación, cancelación u oposición, revocar tu consentimiento o limitar el uso o divulgación de tus datos, escribe a <a href={`mailto:${privacidad.correo}`}>{privacidad.correo}</a>. Consulta los detalles en el <a href="/privacidad/" target="_blank" rel="nofollow noopener noreferrer" data-sveltekit-preload-data="off" data-sveltekit-preload-code="off">aviso de privacidad integral</a> antes de completar el formulario.</p>
+        </details>
     {/if}
 </div>
 
@@ -249,8 +249,9 @@
     .steps li.active { border-color: var(--pink); }.steps li.active span { background: var(--yellow); }.steps li.complete { border-color: var(--navy); }
     form, .success { background: white; border: 1px solid #e7e3f1; border-radius: 2rem; padding: clamp(1.5rem, 5vw, 3.5rem); box-shadow: 0 1.5rem 4rem #190f5b0c; }
     fieldset { border: 0; padding: 0; margin: 0; min-width: 0; }header { margin-bottom: 2rem; }
-    .privacy-summary { line-height: 1.6; font-size: .9rem; margin: 1.5rem 0; }
-    .privacy-summary h2 { font-size: 1.05rem; margin: 0 0 .7rem; }
+    .privacy-summary { line-height: 1.6; font-size: .78rem; margin: 1.25rem 0 0; overflow-wrap: anywhere; }
+    .privacy-summary summary { cursor: pointer; font-weight: 700; padding: .5rem 0; }
+    .privacy-summary summary:focus-visible { outline: 2px solid var(--navy); outline-offset: 4px; }
     .privacy-summary p { margin: .6rem 0; }
     .privacy-summary a { color: #86235f; text-decoration: underline; text-underline-offset: .2em; }
     .fields { display: grid; grid-template-columns: 1fr 1fr; gap: 1.4rem; }.full { grid-column: 1 / -1; }.faculty { margin-top: 1.5rem; }
