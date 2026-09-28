@@ -60,6 +60,7 @@
                     <span>{item.label}</span>
                 </a>
             {/each}
+            <a class="nav-cta" href="/registro/valladolidmun/" aria-current={page.url.pathname === '/registro/valladolidmun/' ? 'page' : undefined} onclick={closeMenu}>ValladolidMUN</a>
         </div>
 
         <button
@@ -99,6 +100,7 @@
                     {item.label}
                 </a>
             {/each}
+            <a class="nav-cta" href="/registro/valladolidmun/" tabindex={menuOpen ? 0 : -1} aria-current={page.url.pathname === '/registro/valladolidmun/' ? 'page' : undefined} onclick={closeMenu}>ValladolidMUN</a>
         </div>
     </div>
 </nav>
@@ -130,7 +132,7 @@
         margin: 0 auto;
         display: flex;
         align-items: center;
-        gap: clamp(1.4rem, 4vw, 5rem);
+        gap: clamp(1rem, 2vw, 2.5rem);
     }
 
     .brand {
@@ -179,7 +181,7 @@
         display: flex;
         align-items: center;
         justify-content: space-between;
-        gap: clamp(1.5rem, 4.2vw, 5.2rem);
+        gap: clamp(0.8rem, 1.8vw, 2.5rem);
         width: 100%;
         margin-left: auto;
     }
@@ -228,7 +230,38 @@
         display: none;
     }
 
-    @media (max-width: 820px) {
+    .desktop-links a.nav-cta,
+    .mobile-links a.nav-cta {
+        justify-content: center;
+        flex-shrink: 0;
+        padding: 0.8rem 1.2rem;
+        border: 0;
+        border-radius: 999px;
+        color: var(--navy);
+        background: var(--yellow);
+        font-family: "Raleway", Arial, sans-serif;
+        font-size: 0.85rem;
+        font-weight: 800;
+        letter-spacing: 0;
+        white-space: nowrap;
+        transition: background 180ms ease, transform 180ms ease;
+    }
+
+    .desktop-links a.nav-cta::after {
+        display: none;
+    }
+
+    .desktop-links a.nav-cta:hover,
+    .mobile-links a.nav-cta:hover {
+        background: #ffdc7a;
+    }
+
+    .nav-cta:focus-visible {
+        outline: 3px solid var(--cyan);
+        outline-offset: 4px;
+    }
+
+    @media (max-width: 1024px) {
         nav {
             height: 4.75rem;
         }
@@ -292,7 +325,7 @@
             z-index: 2;
             display: grid;
             grid-template-rows: auto 1fr;
-            overflow: hidden;
+            overflow-y: auto;
             padding: 5.4rem 7vw 3rem;
             background:
                 radial-gradient(circle at 85% 20%, rgba(255, 87, 182, 0.22), transparent 30%),
@@ -376,6 +409,12 @@
         .mobile-links img {
             width: 2rem;
             height: 2rem;
+        }
+
+        .mobile-links a.nav-cta {
+            min-height: 3rem;
+            margin-top: 1.25rem;
+            --delay: 220ms;
         }
 
         .menu-star {

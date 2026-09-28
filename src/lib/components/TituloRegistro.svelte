@@ -1,7 +1,7 @@
 <script lang="ts">
     import { etiquetaEdicion } from "$lib/data/registro";
 
-    let { text }: { text: string } = $props();
+    let { text, edition = etiquetaEdicion, tagline = "Enciende tu voz. Comparte lo que te mueve." }: { text: string; edition?: string; tagline?: string } = $props();
 </script>
 
 <section class="registration-title">
@@ -12,9 +12,9 @@
         <img class="registration-title__logo" src="/assets/img/logos/principal.svg" alt="Logo del SMMUN" />
 
         <div class="registration-title__copy">
-            <span>{etiquetaEdicion}</span>
+            <span>{edition}</span>
             <h1>{text}</h1>
-            <p>Enciende tu voz. Comparte lo que te mueve.</p>
+            <p>{tagline}</p>
         </div>
     </div>
 </section>

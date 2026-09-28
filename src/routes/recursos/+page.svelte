@@ -74,10 +74,10 @@
         display: flex;
         align-items: center;
         gap: 0.9rem;
-        border: 1px solid rgba(255, 255, 255, 0.46);
-        border-radius: 999px;
-        background: rgba(255, 255, 255, 0.09);
-        backdrop-filter: blur(8px);
+        border: 0;
+        border-radius: 0.5rem;
+        color: var(--navy);
+        background: var(--yellow);
     }
 
     .coming-soon > span {
@@ -97,7 +97,7 @@
         width: 0.35rem;
         height: 0.35rem;
         border-radius: 50%;
-        background: var(--yellow);
+        background: var(--navy);
         animation: pulse 1.2s ease-in-out infinite;
     }
 

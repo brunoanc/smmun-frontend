@@ -5,6 +5,6 @@ import { defineConfig } from "vite";
 export default defineConfig({
     plugins: [
         sveltekit(),
-        svelteSitemap({ domain: 'https://smmun.com', resetTime: true, changeFreq: 'monthly' })
+        svelteSitemap({ domain: 'https://smmun.com', resetTime: true, ignore: ['registro/valladolidmun'], changeFreq: 'monthly' })
     ]
 });
