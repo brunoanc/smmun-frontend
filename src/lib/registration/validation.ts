@@ -1,4 +1,4 @@
-import type { Participant } from './apps-script';
+import { MODELO_SCHOOL, type Participant } from './apps-script';
 
 export type ValidationIssue = { field: string; message: string; step: number };
 
@@ -27,6 +27,11 @@ export function validateParticipant(participant: Participant, onlyStep?: number)
         [2, 'delegacionOficial', 'Delegación oficial']
     ];
     if (participant.delegacionOficial === 'Sí') groups.push([2, 'faculty', 'Nombre del Faculty'], [2, 'correoFaculty', 'Correo del Faculty']);
+    if (participant.escuela === MODELO_SCHOOL) {
+        groups.push([0, 'matricula', 'Matrícula']);
+        if ((onlyStep === undefined || onlyStep === 2) && participant.delegacionOficial !== 'No')
+            return { field: 'escuela', step: 0, message: 'Estudiantes de Universidad Modelo Valladolid no pueden registrarse como delegación oficial.' };
+    }
     const value = (field: string) => String(participant[field] ?? '').trim();
     for (const [step, field, label] of groups) {
         if (onlyStep !== undefined && onlyStep !== step) continue;
@@ -34,6 +39,7 @@ export function validateParticipant(participant: Participant, onlyStep?: number)
         if (!value(field)) message = `Completa el campo ${label}.`;
         else if (['correo', 'correoFaculty'].includes(field) && !isValidEmail(value(field))) message = `Introduce un correo válido en ${label}, por ejemplo nombre@dominio.com.`;
         else if (['telefono', 'telefonoEmergencia'].includes(field) && !isValidPhone(value(field))) message = `${label} debe contener entre 7 y 15 dígitos, con código de país si corresponde.`;
+        else if (field === 'matricula' && !/^[A-Z0-9-]{1,50}$/i.test(value(field))) message = 'La matrícula debe contener hasta 50 letras, números o guiones.';
         else if (field === 'edad' && (!/^\d+$/.test(value(field)) || Number(value(field)) < 10 || Number(value(field)) > 100)) message = 'Introduce una edad entera entre 10 y 100 años.';
         else if (field === 'pronombres' && !['Él', 'Ella', 'Elle', 'Prefiero no decirlo'].includes(value(field))) message = 'Selecciona una opción de pronombres válida.';
         else if (field === 'delegacionOficial' && !['Sí', 'No'].includes(value(field))) message = 'Selecciona si formas parte de una delegación oficial.';

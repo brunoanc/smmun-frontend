@@ -2,7 +2,7 @@
     import { onMount, tick } from 'svelte';
     import type { HTMLInputAttributes } from 'svelte/elements';
     import TituloRegistro from '$lib/components/TituloRegistro.svelte';
-    import { connectAppsScript, generateFolio, type Participant, type Preference } from '$lib/registration/apps-script';
+    import { connectAppsScript, generateFolio, MODELO_SCHOOL, type Participant, type Preference } from '$lib/registration/apps-script';
 
     import { validateParticipant, validateReceipt } from '$lib/registration/validation';
 
@@ -16,8 +16,7 @@
             { key: 'segundoApellido', label: 'Segundo apellido' },
             { key: 'correo', label: 'Correo electrónico', type: 'email', required: true, autocomplete: 'email' },
             { key: 'edad', label: 'Edad', type: 'number', required: true },
-            { key: 'telefono', label: 'Número telefónico', type: 'tel', required: true, autocomplete: 'tel' },
-            { key: 'escuela', label: 'Escuela o institución', required: true }
+            { key: 'telefono', label: 'Número telefónico', type: 'tel', required: true, autocomplete: 'tel' }
         ],
         [
             { key: 'contactoEmergencia', label: 'Nombre de tu contacto de emergencia', required: true },
@@ -26,7 +25,7 @@
         ]
     ];
     let participant = $state<Participant>(Object.fromEntries([
-        'nombres', 'primerApellido', 'segundoApellido', 'pronombres', 'correo', 'edad', 'telefono', 'escuela',
+        'nombres', 'primerApellido', 'segundoApellido', 'pronombres', 'correo', 'edad', 'telefono', 'escuela', 'matricula',
         'contactoEmergencia', 'parentesco', 'telefonoEmergencia', 'alergias', 'delegacionOficial', 'faculty', 'correoFaculty'
     ].map(key => [key, ''])));
     let preferences = $state<Preference[]>(Array.from({ length: 3 }, () => ({ comite: '', paises: ['', '', ''] })));
@@ -45,7 +44,10 @@
     const draftKey = 'valladolidmun-2026-draft';
     let initialized = $state(false);
     let bridge: ReturnType<typeof connectAppsScript> | undefined;
-    const amount = $derived(participant.delegacionOficial === 'Sí' ? '$90 MXN' : '$110 MXN');
+    let schoolChoice = $state('');
+    const isModelo = $derived(participant.escuela === MODELO_SCHOOL);
+    const visibleSteps = $derived(steps.map((label, index) => ({ label, index })).filter(item => !isModelo || item.index !== 2));
+    const amount = $derived(isModelo ? '$0 MXN' : participant.delegacionOficial === 'Sí' ? '$90 MXN' : '$110 MXN');
     const isCPI = (committee: string) => committee.trim().toUpperCase() === 'CPI';
 
     onMount(() => {
@@ -62,6 +64,12 @@
                 if (typeof stored.pendingFolio === 'string' && /^V26-(?:[0-9A-HJKMNP-TV-Z]{8}|[A-F0-9]{16})$/.test(stored.pendingFolio)) pendingFolio = stored.pendingFolio;
             }
         } catch { /* Storage can be unavailable; the form still works. */ }
+        schoolChoice = participant.escuela === MODELO_SCHOOL ? MODELO_SCHOOL : participant.escuela ? 'Otra' : '';
+        if (participant.escuela === MODELO_SCHOOL) {
+            participant.delegacionOficial = 'No';
+            participant.faculty = '';
+            participant.correoFaculty = '';
+        }
         initialized = true;
         void loadCountries();
         return () => bridge?.destroy();
@@ -120,9 +128,9 @@
                 return;
             }
             if (step === 3) validatePreferences();
-            if (step < 4) { await move(step + 1); return; }
+            if (step < 4) { await move(isModelo && step === 1 ? 3 : step + 1); return; }
             validatePreferences();
-            const receiptError = validateReceipt(receipt);
+            const receiptError = isModelo ? '' : validateReceipt(receipt);
             if (receiptError) throw new Error(receiptError);
             if (!bridge || loading || connectionError) throw new Error('Espera a que se conecte el registro antes de enviar.');
             sending = true;
@@ -132,7 +140,7 @@
                 participante: Object.fromEntries(Object.entries(participant).map(([key, value]) => [key, String(value).trim()])),
                 preferencias: preferences.map(option => ({ comite: option.comite, paises: isCPI(option.comite) ? [...option.paises.slice(0, 2), 'N/A'] : [...option.paises] })),
                 pago: { monto: amount }
-            }, receipt!);
+            }, isModelo ? undefined : receipt!);
             if (!result.exito || !result.folio) throw new Error('No se recibió un folio de confirmación. Intenta nuevamente.');
             folio = result.folio;
             try { sessionStorage.removeItem(draftKey); } catch { /* Optional draft storage. */ }
@@ -154,7 +162,7 @@
         <section class="success" aria-live="polite">
             <span class="spark" aria-hidden="true">✦</span>
             <h2 bind:this={heading} tabindex="-1">¡Muchas gracias!</h2>
-            <p>Tu registro se guardó correctamente. Tu pago está pendiente de verificación.</p>
+            <p>Tu registro se guardó correctamente. {isModelo ? 'Se validará tu pertenencia a la Universidad Modelo Valladolid con tu matrícula.' : 'Tu pago está pendiente de verificación.'}</p>
             <span>Tu folio de registro</span>
             <strong class="folio">{folio}</strong>
             <p>Guarda este folio para futuras comunicaciones relacionadas con tu registro.</p>
@@ -162,21 +170,35 @@
         </section>
     {:else}
         <ol class="steps" aria-label="Pasos del registro">
-            {#each steps as label, index}
-                <li class:active={step === index} class:complete={step > index} aria-current={step === index ? 'step' : undefined}><span>{index + 1}</span>{label}</li>
+            {#each visibleSteps as { label, index }, position}
+                <li class:active={step === index} class:complete={step > index} aria-current={step === index ? 'step' : undefined}><span>{position + 1}</span>{label}</li>
             {/each}
         </ol>
         {#if loading}<p role="status" class="notice">Conectando con el registro…</p>{/if}
         {#if connectionError}<div class="notice" role="alert">{connectionError}{#if endpoint}<button type="button" onclick={loadCountries}>Volver a conectar</button>{/if}</div>{/if}
         <form bind:this={form} onsubmit={advance}>
             <fieldset disabled={sending}>
-                <header><span class="eyebrow">Paso {step + 1} de 5</span><h2 bind:this={heading} tabindex="-1">{steps[step]}</h2></header>
+                <header><span class="eyebrow">Paso {visibleSteps.findIndex(item => item.index === step) + 1} de {visibleSteps.length}</span><h2 bind:this={heading} tabindex="-1">{steps[step]}</h2></header>
                 {#if step < 2}
                     <div class="fields">
                         {#each fields[step] as field}
                             <div class="field"><label for={field.key}>{field.label}{field.required ? ' *' : ''}</label><input id={field.key} type={field.type || 'text'} bind:value={participant[field.key]} required={field.required} autocomplete={field.autocomplete} maxlength={field.type === 'email' ? 254 : field.type === 'tel' ? 40 : field.type === 'number' ? undefined : 200} min={field.type === 'number' ? 10 : undefined} max={field.type === 'number' ? 100 : undefined} step={field.type === 'number' ? 1 : undefined} /></div>
                         {/each}
                         {#if step === 0}
+                            <div class="field full"><label for="escuela">Escuela o institución *</label><select id="escuela" value={schoolChoice} required onchange={(event) => {
+                                schoolChoice = event.currentTarget.value;
+                                participant.escuela = schoolChoice === MODELO_SCHOOL ? MODELO_SCHOOL : '';
+                                participant.matricula = '';
+                                participant.delegacionOficial = schoolChoice === MODELO_SCHOOL ? 'No' : '';
+                                participant.faculty = '';
+                                participant.correoFaculty = '';
+                                receipt = null;
+                            }}><option value="">Selecciona una opción</option><option value={MODELO_SCHOOL}>{MODELO_SCHOOL}</option><option value="Otra">Otra</option></select></div>
+                            {#if schoolChoice === 'Otra'}
+                                <div class="field full"><label for="otraEscuela">Nombre de tu escuela o institución *</label><input id="otraEscuela" bind:value={participant.escuela} required maxlength="200" /></div>
+                            {:else if isModelo}
+                                <div class="field"><label for="matricula">Matrícula *</label><input id="matricula" bind:value={participant.matricula} required maxlength="50" pattern="[A-Za-z0-9-]+" /></div>
+                            {/if}
                             <div class="field"><label for="pronombres">Pronombres *</label><select id="pronombres" bind:value={participant.pronombres} required><option value="">Selecciona una opción</option>{#each ['Él', 'Ella', 'Elle', 'Prefiero no decirlo'] as value}<option>{value}</option>{/each}</select></div>
                         {:else}
                             <div class="field full"><label for="alergias">Alergias o condiciones médicas</label><textarea id="alergias" bind:value={participant.alergias} placeholder="Si no tienes, escribe Ninguna." rows="3" maxlength="2000"></textarea></div>
@@ -195,15 +217,15 @@
                         <div class="fields countries">{#each Array.from({ length: isCPI(option.comite) ? 2 : 3 }) as _, position}<div class="field"><label for={`pais-${index}-${position}`}>{preferenceLabels[position]} *</label><select id={`pais-${index}-${position}`} bind:value={option.paises[position]} required disabled={!option.comite}><option value="">Selecciona una opción</option>{#each countries[option.comite] || [] as country}<option disabled={option.paises.some((other, otherPosition) => otherPosition !== position && other === country)}>{country}</option>{/each}</select></div>{/each}</div></section>
                     {/each}
                 {:else}
-                    <p>Revisa tu registro y adjunta tu comprobante para finalizar.</p>
+                    <p>{isModelo ? 'Revisa tu registro para finalizar.' : 'Revisa tu registro y adjunta tu comprobante para finalizar.'}</p>
                     <div class="review"><strong>{participant.nombres} {participant.primerApellido} {participant.segundoApellido}</strong><p>{participant.correo} · {participant.escuela}</p><ol>{#each preferences as option}<li>{option.comite}: {option.paises.filter(Boolean).join(', ')}</li>{/each}</ol></div>
-                    <div class="payment"><span>Cuota de recuperación</span><strong>{amount}</strong><dl><dt>Banco</dt><dd>BBVA</dd><dt>Titular</dt><dd>Ariel Damian Puerto Puerto</dd><dt>CLABE interbancaria</dt><dd class="clabe">012 180 01575060013 2</dd><dt>Concepto / referencia</dt><dd>Tu nombre completo</dd></dl></div>
-                    <div class="upload"><label for="comprobante">Comprobante de pago *</label><p>PDF, JPG o PNG · Máximo 5 MB</p><input id="comprobante" type="file" accept=".pdf,.jpg,.jpeg,.png" required onchange={(event) => { receipt = event.currentTarget.files?.[0] || null; error = validateReceipt(receipt); }} /></div>
+                    <div class="payment"><span>Cuota de recuperación</span><strong>{isModelo ? 'Gratis' : amount}</strong>{#if isModelo}<p>El registro es gratuito para estudiantes de la Universidad Modelo Valladolid. Se validará tu pertenencia a la Universidad con tu matrícula.</p><p>Matrícula: {participant.matricula}</p>{:else}<dl><dt>Banco</dt><dd>BBVA</dd><dt>Titular</dt><dd>Ariel Damian Puerto Puerto</dd><dt>CLABE interbancaria</dt><dd class="clabe">012 180 01575060013 2</dd><dt>Concepto / referencia</dt><dd>Tu nombre completo</dd></dl>{/if}</div>
+                    {#if !isModelo}<div class="upload"><label for="comprobante">Comprobante de pago *</label><p>PDF, JPG o PNG · Máximo 5 MB</p><input id="comprobante" type="file" accept=".pdf,.jpg,.jpeg,.png" required onchange={(event) => { receipt = event.currentTarget.files?.[0] || null; error = validateReceipt(receipt); }} /></div>{/if}
                 {/if}
             </fieldset>
             {#if error}<p class="error" role="alert">{error}</p>{/if}
-            <div class="actions">{#if step > 0}<button class="secondary" type="button" disabled={sending} onclick={() => move(step - 1)}>← Atrás</button>{/if}<button class="primary" type="submit" disabled={sending || (step >= 3 && (loading || !!connectionError))}>{sending ? 'Guardando tu registro…' : step === 4 ? 'Finalizar registro →' : 'Continuar →'}</button></div>
-            {#if sending}<p role="status">Estamos enviando tu comprobante. Mantén esta página abierta.</p>{/if}
+            <div class="actions">{#if step > 0}<button class="secondary" type="button" disabled={sending} onclick={() => move(isModelo && step === 3 ? 1 : step - 1)}>← Atrás</button>{/if}<button class="primary" type="submit" disabled={sending || (step >= 3 && (loading || !!connectionError))}>{sending ? 'Guardando tu registro…' : step === 4 ? 'Finalizar registro →' : 'Continuar →'}</button></div>
+            {#if sending}<p role="status">Estamos guardando tu registro. Mantén esta página abierta.</p>{/if}
         </form>
     {/if}
 </div>

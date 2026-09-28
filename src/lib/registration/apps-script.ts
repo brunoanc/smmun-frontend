@@ -1,3 +1,5 @@
+export const MODELO_SCHOOL = 'Universidad Modelo Valladolid';
+
 export type Participant = Record<string, string>;
 export type Preference = { comite: string; paises: string[] };
 export type Registration = {
@@ -5,7 +7,7 @@ export type Registration = {
     folio: string;
     participante: Participant;
     preferencias: Preference[];
-    pago: { monto: string };
+    pago: { monto: string; archivoBase64?: string; nombreArchivo?: string; mimeType?: string };
 };
 
 export function generateFolio(): string {
@@ -27,7 +29,6 @@ export function connectAppsScript(url: string) {
     endpoint.searchParams.set('channel', channel);
     let peer: Window | null = null;
     let peerOrigin = '';
-    let supportsFileUpload = false;
     let resolveReady: () => void;
     let rejectReady: (error: Error) => void;
     const pending = new Map<string, { resolve: (value: unknown) => void; reject: (error: Error) => void; timer: ReturnType<typeof setTimeout> }>();
@@ -40,7 +41,6 @@ export function connectAppsScript(url: string) {
         if (message.type === 'ready' && !peer) {
             peer = event.source as Window;
             peerOrigin = event.origin;
-            supportsFileUpload = message.fileUpload === true;
             clearTimeout(timer);
             resolveReady();
         }
@@ -61,8 +61,14 @@ export function connectAppsScript(url: string) {
     return {
         async call<T>(action: 'countries' | 'register', payload?: Registration, receipt?: File): Promise<T> {
             await ready;
-            if (action === 'register' && (!supportsFileUpload || !receipt)) {
-                throw new Error('La conexión de registro necesita actualizarse para recibir archivos. Intenta nuevamente más tarde.');
+            if (action === 'register') {
+                if (!payload) throw new Error('Registro incompleto.');
+                if (payload.participante.escuela !== MODELO_SCHOOL) {
+                    if (!receipt) throw new Error('Adjunta tu comprobante de pago.');
+                    payload = { ...payload, pago: { ...payload.pago,
+                        archivoBase64: await readReceipt(receipt), nombreArchivo: receipt.name, mimeType: receipt.type
+                    } };
+                }
             }
             const id = crypto.randomUUID();
             return new Promise<T>((resolve, reject) => {
@@ -71,7 +77,7 @@ export function connectAppsScript(url: string) {
                     reject(new Error('No se recibió confirmación. Puedes intentar nuevamente con el mismo registro.'));
                 }, 120000);
                 pending.set(id, { resolve: (value) => resolve(value as T), reject, timer: timeout });
-                peer!.postMessage({ channel, id, action, payload, receipt }, peerOrigin);
+                peer!.postMessage({ channel, id, action, payload }, peerOrigin);
             });
         },
         destroy() {
@@ -86,4 +92,16 @@ export function connectAppsScript(url: string) {
             pending.clear();
         }
     };
+}
+
+// Send a plain data object through Google's RPC rather than its postform upload.
+export function readReceipt(file: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => typeof reader.result === 'string'
+            ? resolve(reader.result) : reject(new Error('No se pudo leer el comprobante.'));
+        reader.onerror = () => reject(new Error('No se pudo leer el comprobante. Selecciónalo nuevamente.'));
+        reader.onabort = () => reject(new Error('Se canceló la lectura del comprobante.'));
+        reader.readAsDataURL(file);
+    });
 }
