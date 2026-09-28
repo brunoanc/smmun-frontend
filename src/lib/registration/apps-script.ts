@@ -5,7 +5,7 @@ export type Registration = {
     folio: string;
     participante: Participant;
     preferencias: Preference[];
-    pago: { archivoBase64: string; mimeType: string; nombreArchivo: string; monto: string };
+    pago: { monto: string };
 };
 
 export function generateFolio(): string {
@@ -27,6 +27,7 @@ export function connectAppsScript(url: string) {
     endpoint.searchParams.set('channel', channel);
     let peer: Window | null = null;
     let peerOrigin = '';
+    let supportsFileUpload = false;
     let resolveReady: () => void;
     let rejectReady: (error: Error) => void;
     const pending = new Map<string, { resolve: (value: unknown) => void; reject: (error: Error) => void; timer: ReturnType<typeof setTimeout> }>();
@@ -39,6 +40,7 @@ export function connectAppsScript(url: string) {
         if (message.type === 'ready' && !peer) {
             peer = event.source as Window;
             peerOrigin = event.origin;
+            supportsFileUpload = message.fileUpload === true;
             clearTimeout(timer);
             resolveReady();
         }
@@ -57,8 +59,11 @@ export function connectAppsScript(url: string) {
     iframe.src = endpoint.href;
     document.body.appendChild(iframe);
     return {
-        async call<T>(action: 'countries' | 'register', payload?: Registration): Promise<T> {
+        async call<T>(action: 'countries' | 'register', payload?: Registration, receipt?: File): Promise<T> {
             await ready;
+            if (action === 'register' && (!supportsFileUpload || !receipt)) {
+                throw new Error('La conexión de registro necesita actualizarse para recibir archivos. Intenta nuevamente más tarde.');
+            }
             const id = crypto.randomUUID();
             return new Promise<T>((resolve, reject) => {
                 const timeout = setTimeout(() => {
@@ -66,7 +71,7 @@ export function connectAppsScript(url: string) {
                     reject(new Error('No se recibió confirmación. Puedes intentar nuevamente con el mismo registro.'));
                 }, 120000);
                 pending.set(id, { resolve: (value) => resolve(value as T), reject, timer: timeout });
-                peer!.postMessage({ channel, id, action, payload }, peerOrigin);
+                peer!.postMessage({ channel, id, action, payload, receipt }, peerOrigin);
             });
         },
         destroy() {
@@ -81,13 +86,4 @@ export function connectAppsScript(url: string) {
             pending.clear();
         }
     };
-}
-
-export function readReceipt(file: File): Promise<string> {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(String(reader.result));
-        reader.onerror = () => reject(new Error('No se pudo leer el comprobante. Selecciónalo nuevamente.'));
-        reader.readAsDataURL(file);
-    });
 }

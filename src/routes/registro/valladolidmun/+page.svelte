@@ -2,7 +2,7 @@
     import { onMount, tick } from 'svelte';
     import type { HTMLInputAttributes } from 'svelte/elements';
     import TituloRegistro from '$lib/components/TituloRegistro.svelte';
-    import { connectAppsScript, generateFolio, readReceipt, type Participant, type Preference } from '$lib/registration/apps-script';
+    import { connectAppsScript, generateFolio, type Participant, type Preference } from '$lib/registration/apps-script';
 
     import { validateParticipant, validateReceipt } from '$lib/registration/validation';
 
@@ -126,14 +126,13 @@
             if (receiptError) throw new Error(receiptError);
             if (!bridge || loading || connectionError) throw new Error('Espera a que se conecte el registro antes de enviar.');
             sending = true;
-            const archivoBase64 = await readReceipt(receipt!);
             const result = await bridge.call<{ exito: boolean; folio: string }>('register', {
                 requestId,
                 folio: pendingFolio,
                 participante: Object.fromEntries(Object.entries(participant).map(([key, value]) => [key, String(value).trim()])),
                 preferencias: preferences.map(option => ({ comite: option.comite, paises: isCPI(option.comite) ? [...option.paises.slice(0, 2), 'N/A'] : [...option.paises] })),
-                pago: { archivoBase64, mimeType: receipt!.type, nombreArchivo: receipt!.name, monto: amount }
-            });
+                pago: { monto: amount }
+            }, receipt!);
             if (!result.exito || !result.folio) throw new Error('No se recibió un folio de confirmación. Intenta nuevamente.');
             folio = result.folio;
             try { sessionStorage.removeItem(draftKey); } catch { /* Optional draft storage. */ }
