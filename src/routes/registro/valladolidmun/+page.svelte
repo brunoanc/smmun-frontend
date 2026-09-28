@@ -4,6 +4,8 @@
     import TituloRegistro from '$lib/components/TituloRegistro.svelte';
     import { connectAppsScript, generateFolio, MODELO_SCHOOL, type Participant, type Preference } from '$lib/registration/apps-script';
 
+    import { privacidad } from '$lib/data/privacidad';
+
     import { validateParticipant, validateReceipt } from '$lib/registration/validation';
 
     const preferenceLabels = ['Primera opción', 'Segunda opción', 'Tercera opción'];
@@ -47,7 +49,7 @@
     let schoolChoice = $state('');
     const isModelo = $derived(participant.escuela === MODELO_SCHOOL);
     const visibleSteps = $derived(steps.map((label, index) => ({ label, index })).filter(item => !isModelo || item.index !== 2));
-    const amount = $derived(isModelo ? '$0 MXN' : participant.delegacionOficial === 'Sí' ? '$90 MXN' : '$110 MXN');
+    const amount = $derived(isModelo ? 'Por confirmar' : participant.delegacionOficial === 'Sí' ? '$90 MXN' : '$110 MXN');
     const isCPI = (committee: string) => committee.trim().toUpperCase() === 'CPI';
 
     onMount(() => {
@@ -162,7 +164,7 @@
         <section class="success" aria-live="polite">
             <span class="spark" aria-hidden="true">✦</span>
             <h2 bind:this={heading} tabindex="-1">¡Muchas gracias!</h2>
-            <p>Tu registro se guardó correctamente. {isModelo ? 'Se validará tu pertenencia a la Universidad Modelo Valladolid con tu matrícula.' : 'Tu pago está pendiente de verificación.'}</p>
+            <p>Tu registro se guardó correctamente. {isModelo ? 'El monto de inscripción está por confirmar. Se validará tu pertenencia a la Universidad Modelo Valladolid con tu matrícula.' : 'Tu pago está pendiente de verificación.'}</p>
             <span>Tu folio de registro</span>
             <strong class="folio">{folio}</strong>
             <p>Guarda este folio para futuras comunicaciones relacionadas con tu registro.</p>
@@ -176,6 +178,12 @@
         </ol>
         {#if loading}<p role="status" class="notice">Conectando con el registro…</p>{/if}
         {#if connectionError}<div class="notice" role="alert">{connectionError}{#if endpoint}<button type="button" onclick={loadCountries}>Volver a conectar</button>{/if}</div>{/if}
+        <aside class="privacy-summary" aria-labelledby="privacy-heading">
+            <h2 id="privacy-heading">Aviso de privacidad simplificado</h2>
+            <p>{privacidad.responsable} es responsable del tratamiento de los datos de este registro. Recogemos datos de identificación, contacto, escuela, matrícula cuando corresponde, contacto de emergencia, delegación y preferencias para gestionar tu inscripción, asignar comités, verificar el pago o tu pertenencia a Universidad Modelo Valladolid y atender emergencias. Cuando corresponde, el comprobante incluye datos financieros.</p>
+            <p>La información de salud que decidas proporcionar es sensible y opcional; se utiliza para prever necesidades de atención y actuar ante emergencias. Puedes dejar ese campo vacío.</p>
+            <p>Para ejercer tus derechos de acceso, rectificación, cancelación u oposición, revocar tu consentimiento o limitar el uso o divulgación de tus datos, escribe a <a href={`mailto:${privacidad.correo}`}>{privacidad.correo}</a>. Consulta los detalles en el <a href="/privacidad/" target="_blank" rel="nofollow noopener noreferrer" data-sveltekit-preload-data="off" data-sveltekit-preload-code="off">aviso de privacidad integral</a> antes de completar el formulario.</p>
+        </aside>
         <form bind:this={form} onsubmit={advance}>
             <fieldset disabled={sending}>
                 <header><span class="eyebrow">Paso {visibleSteps.findIndex(item => item.index === step) + 1} de {visibleSteps.length}</span><h2 bind:this={heading} tabindex="-1">{steps[step]}</h2></header>
@@ -219,7 +227,7 @@
                 {:else}
                     <p>{isModelo ? 'Revisa tu registro para finalizar.' : 'Revisa tu registro y adjunta tu comprobante para finalizar.'}</p>
                     <div class="review"><strong>{participant.nombres} {participant.primerApellido} {participant.segundoApellido}</strong><p>{participant.correo} · {participant.escuela}</p><ol>{#each preferences as option}<li>{option.comite}: {option.paises.filter(Boolean).join(', ')}</li>{/each}</ol></div>
-                    <div class="payment"><span>Cuota de recuperación</span><strong>{isModelo ? 'Gratis' : amount}</strong>{#if isModelo}<p>El registro es gratuito para estudiantes de la Universidad Modelo Valladolid. Se validará tu pertenencia a la Universidad con tu matrícula.</p><p>Matrícula: {participant.matricula}</p>{:else}<dl><dt>Banco</dt><dd>BBVA</dd><dt>Titular</dt><dd>Ariel Damian Puerto Puerto</dd><dt>CLABE interbancaria</dt><dd class="clabe">012 180 01575060013 2</dd><dt>Concepto / referencia</dt><dd>Tu nombre completo</dd></dl>{/if}</div>
+                    <div class="payment"><span>Cuota de recuperación</span><strong>{amount}</strong>{#if isModelo}<p>El monto de inscripción para estudiantes de la Universidad Modelo Valladolid está por confirmar. Se validará tu pertenencia a la Universidad con tu matrícula. No necesitas realizar un pago ni adjuntar un comprobante para enviar este registro mientras se confirma el monto.</p><p>Matrícula: {participant.matricula}</p>{/if}<dl><dt>Banco</dt><dd>BBVA</dd><dt>Titular</dt><dd>Ariel Damian Puerto Puerto</dd><dt>CLABE interbancaria</dt><dd class="clabe">012 180 01575060013 2</dd><dt>Concepto / referencia</dt><dd>Tu nombre completo</dd></dl></div>
                     {#if !isModelo}<div class="upload"><label for="comprobante">Comprobante de pago *</label><p>PDF, JPG o PNG · Máximo 5 MB</p><input id="comprobante" type="file" accept=".pdf,.jpg,.jpeg,.png" required onchange={(event) => { receipt = event.currentTarget.files?.[0] || null; error = validateReceipt(receipt); }} /></div>{/if}
                 {/if}
             </fieldset>
@@ -241,6 +249,10 @@
     .steps li.active { border-color: var(--pink); }.steps li.active span { background: var(--yellow); }.steps li.complete { border-color: var(--navy); }
     form, .success { background: white; border: 1px solid #e7e3f1; border-radius: 2rem; padding: clamp(1.5rem, 5vw, 3.5rem); box-shadow: 0 1.5rem 4rem #190f5b0c; }
     fieldset { border: 0; padding: 0; margin: 0; min-width: 0; }header { margin-bottom: 2rem; }
+    .privacy-summary { line-height: 1.6; font-size: .9rem; margin: 1.5rem 0; }
+    .privacy-summary h2 { font-size: 1.05rem; margin: 0 0 .7rem; }
+    .privacy-summary p { margin: .6rem 0; }
+    .privacy-summary a { color: #86235f; text-decoration: underline; text-underline-offset: .2em; }
     .fields { display: grid; grid-template-columns: 1fr 1fr; gap: 1.4rem; }.full { grid-column: 1 / -1; }.faculty { margin-top: 1.5rem; }
     .field { display: flex; flex-direction: column; gap: .55rem; }label { font-size: .85rem; font-weight: 800; }
     input, select, textarea { width: 100%; min-height: 3.4rem; padding: .8rem 1rem; border: 1px solid #d7d2e8; border-radius: .8rem; background: #fcfbff; color: var(--navy); font: inherit; }
