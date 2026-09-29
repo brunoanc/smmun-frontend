@@ -9,7 +9,7 @@
     import { validateParticipant, validateReceipt } from '$lib/registration/validation';
 
     const preferenceLabels = ['Primera opción', 'Segunda opción', 'Tercera opción'];
-    const endpoint = import.meta.env.VITE_APPS_SCRIPT_URL || 'https://script.google.com/macros/s/AKfycbxqyDr58A4ECV_FUHHi8SXWbhX_JqWc6yh_DsZZpTn88Oe4ifg1Ue_0Arcg3A40hip5/exec';
+    const endpoint = import.meta.env.VITE_APPS_SCRIPT_URL || 'https://script.google.com/macros/s/AKfycbxAKN-f-sBQnpreabCM4OyqLUw2uFCwILW_m9uwNx_fZLbT8KY5yeXIn4Etba-JpINf/exec';
     const steps = ['Tus datos', 'Emergencia', 'Tu delegación', 'Comités', 'Pago'];
     const fields: { key: string; label: string; type?: string; required?: boolean; autocomplete?: HTMLInputAttributes["autocomplete"] }[][] = [
         [
