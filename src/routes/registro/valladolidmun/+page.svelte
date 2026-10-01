@@ -5,6 +5,7 @@
     import { connectAppsScript, generateFolio, MODELO_SCHOOL, type Participant, type Preference } from '$lib/registration/apps-script';
 
     import { privacidad } from '$lib/data/privacidad';
+    import { getValladolidCommitteeTopic } from '$lib/data/valladolidmun';
 
     import { validateParticipant, validateReceipt } from '$lib/registration/validation';
 
@@ -212,7 +213,11 @@
                 {:else if step === 3}
                     <p>Elige tres comités distintos en orden de preferencia y sus posibles delegaciones. Para CPI, ordena las dos posturas.</p>
                     {#each preferences as option, index}
-                        <section class="preference"><h3>0{index + 1} <span>Opción de comité</span></h3><div class="field"><label for={`comite-${index}`}>Comité *</label><select id={`comite-${index}`} bind:value={option.comite} required onchange={() => { option.paises = ['', '', '']; }}><option value="">Selecciona un comité</option>{#each Object.keys(countries) as committee}<option value={committee} disabled={preferences.some((other, otherIndex) => otherIndex !== index && other.comite === committee)}>{committee}</option>{/each}</select></div>
+                        {@const topic = getValladolidCommitteeTopic(option.comite)}
+                        <section class="preference"><h3>0{index + 1} <span>Opción de comité</span></h3><div class="field"><label for={`comite-${index}`}>Comité *</label><select id={`comite-${index}`} aria-describedby={topic ? `topic-${index}` : undefined} bind:value={option.comite} required onchange={() => { option.paises = ['', '', '']; }}><option value="">Selecciona un comité</option>{#each Object.keys(countries) as committee}<option value={committee} disabled={preferences.some((other, otherIndex) => otherIndex !== index && other.comite === committee)}>{committee}</option>{/each}</select></div>
+                        {#if topic}
+                            <div class="committee-topic" id={`topic-${index}`} aria-live="polite"><span>Tópico</span><p>{topic}</p></div>
+                        {/if}
                         <div class="fields countries">{#each Array.from({ length: isCPI(option.comite) ? 2 : 3 }) as _, position}<div class="field"><label for={`pais-${index}-${position}`}>{preferenceLabels[position]} *</label><select id={`pais-${index}-${position}`} bind:value={option.paises[position]} required disabled={!option.comite}><option value="">Selecciona una opción</option>{#each countries[option.comite] || [] as country}<option disabled={option.paises.some((other, otherPosition) => otherPosition !== position && other === country)}>{country}</option>{/each}</select></div>{/each}</div></section>
                     {/each}
                 {:else}
@@ -256,6 +261,9 @@
     input, select, textarea { width: 100%; min-height: 3.4rem; padding: .8rem 1rem; border: 1px solid #d7d2e8; border-radius: .8rem; background: #fcfbff; color: var(--navy); font: inherit; }
     input:focus, select:focus, textarea:focus { outline: 3px solid #ff57b633; border-color: var(--pink); }h2:focus { outline: none; }
     .preference { border-top: 1px solid #e7e3f1; padding: 1.5rem 0; }.preference h3 { color: #a82b76; font-size: 1.3rem; font-weight: 850; }.preference h3 span { color: var(--navy); margin-left: .5rem; font-size: 1rem; }.countries { margin-top: 1rem; grid-template-columns: repeat(3, 1fr); }
+    .committee-topic { margin-top: 1rem; padding: 1rem 1.2rem; border-left: 3px solid var(--pink); border-radius: .6rem; background: #f7f5ff; overflow-wrap: anywhere; }
+    .committee-topic span { color: #a82b76; font-size: .75rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+    .committee-topic p { margin: .4rem 0 0; font-size: .95rem; line-height: 1.65; }
     .actions { display: flex; flex-wrap: wrap; gap: 1rem; justify-content: space-between; margin-top: 2.5rem; }
     button, .primary { border: 0; padding: 1rem 1.6rem; border-radius: 999px; font: inherit; font-size: .85rem; font-weight: 800; cursor: pointer; text-decoration: none; }.primary { color: white; background: var(--navy); margin-left: auto; }.primary:hover { background: #a82b76; }.secondary { color: var(--navy); background: #f0edf8; }button:disabled { opacity: .6; cursor: wait; }
     .notice, .error { padding: 1rem 1.2rem; border-radius: 1rem; background: #fff5d7; margin: 1rem 0; }.error { background: #fff0f4; color: #9a1648; }.notice button { margin-left: .5rem; }
