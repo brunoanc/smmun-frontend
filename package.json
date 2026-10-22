@@ -17,8 +17,6 @@
         "@sveltejs/kit": "^2.70.3",
         "@sveltejs/vite-plugin-svelte": "^7.3.0",
         "@types/bootstrap": "^5.2.11",
-        "@types/html-minifier-terser": "^7.0.2",
-        "html-minifier-terser": "^7.2.0",
         "svelte": "^5.57.0",
         "svelte-check": "^4.7.6",
         "svelte-sitemap": "^4.0.4",
