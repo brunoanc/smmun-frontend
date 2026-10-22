@@ -20,12 +20,12 @@
         description: "El Modelo de Naciones Unidas donde cada voz enciende una chispa.",
         email: registroConfig.contactos.secretariaGeneral
     };
+    const structuredData = JSON.stringify([websiteStructuredData, organizationStructuredData]).replace(/</g, "\\u003c");
 </script>
 
 <svelte:head>
     <link rel="preload" href="/assets/img/hero.webp" as="image" type="image/webp">
-    <script type="application/ld+json">{JSON.stringify(websiteStructuredData)}</script>
-    <script type="application/ld+json">{JSON.stringify(organizationStructuredData)}</script>
+    {@html `<script type="application/ld+json">${structuredData}</script>`}
 </svelte:head>
 
 <section class="hero">

@@ -1,0 +1,12 @@
+# SMMUN
+
+SMMUN is the Modelo de Naciones Unidas del Sureste Mexicano. The current edition is SMMUN 2027, Our Spark. Public information is in Spanish.
+
+## Public pages
+
+- [Home](https://smmun.com/): introduction to SMMUN 2027.
+- [About SMMUN](https://smmun.com/quienes-somos/): mission, vision, and previous editions.
+- [Registration](https://smmun.com/registro/): current registration announcements and availability.
+- [Resources](https://smmun.com/recursos/): committee manuals and resources when published.
+
+The registration and resources pages currently announce upcoming material. Do not infer open registration, dates, or available manuals from earlier editions. The privacy notice and registration form are excluded from this index.

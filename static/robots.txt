@@ -3,6 +3,7 @@ Sitemap: https://smmun.com/sitemap.xml
 # Search crawlers must be able to read the integral notice's noindex meta tag.
 # Disallowing it here would prevent them from seeing that instruction.
 User-agent: *
+Content-Signal: ai-train=no, search=yes, ai-input=yes
 Allow: /
 Disallow: /privacidad/__data.json
 
@@ -12,4 +13,5 @@ User-agent: ClaudeBot
 User-agent: CCBot
 User-agent: Bytespider
 User-agent: Google-Extended
+Content-Signal: ai-train=no, search=yes, ai-input=yes
 Disallow: /privacidad

@@ -8,6 +8,19 @@ const config = {
     preprocess: vitePreprocess(),
 
     kit: {
+        csp: {
+            directives: {
+                "default-src": ["self"],
+                "base-uri": ["self"],
+                "object-src": ["none"],
+                "script-src": ["self", "https://w.behold.so", "https://static.cloudflareinsights.com"],
+                "style-src": ["self", "unsafe-inline"],
+                "img-src": ["self", "data:", "https:"],
+                "font-src": ["self", "data:"],
+                "connect-src": ["self", "https://*.behold.so", "https://cloudflareinsights.com"],
+                "frame-src": ["https://script.google.com", "https://*.googleusercontent.com"]
+            }
+        },
         adapter: adapter({
             // default options are shown. On some platforms
             // these options are set automatically — see below
