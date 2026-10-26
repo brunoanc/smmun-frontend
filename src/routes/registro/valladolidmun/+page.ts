@@ -1,4 +1,4 @@
 export const load = () => ({
-    title: 'Registro | ValladolidMUN 2026: El derecho a imaginar',
-    description: 'Completa tus datos, elige tus comités y finaliza tu registro.'
+    title: 'Inscripciones cerradas | ValladolidMUN 2026',
+    description: 'Las inscripciones a ValladolidMUN 2026 han cerrado. Gracias por tu interés en formar parte de ValladolidMUN.'
 });
